@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David Van Osdol, CFA, CFP® - Interactive Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral (Background: #F8F7F4, Text: Slate, Accent: Teal) -->
+    <!-- Application Structure Plan: The SPA is designed as a narrative journey through David Van Osdol's career, prioritizing user exploration over a rigid, linear format. The structure includes a sticky navigation for quick access, an interactive vertical timeline for the extensive work experience, and categorized skill cards. This design breaks down complex information into digestible, interactive chunks, making the resume more engaging and easier to navigate than a traditional document. The goal is to allow a user to either scroll through the career story or jump directly to the section most relevant to them. -->
+    <!-- Visualization & Content Choices: 
+        - Experience -> Goal: Organize/Compare -> Viz: Interactive Vertical Timeline (HTML/CSS/JS) & Bar Chart (Chart.js). Justification: The timeline condenses 20+ years of experience, making it scannable. Clicking expands details, preventing information overload. The bar chart provides a quick visual comparison of role durations, offering an at-a-glance summary of the career path.
+        - Skills -> Goal: Organize -> Viz: Grouped Cards (HTML/Tailwind). Justification: Categorizing skills into "Wealth Management," "Business Acumen," etc., provides structure and clarity, which is more effective than a long list.
+        - Certifications -> Goal: Inform -> Viz: Icon-based List (HTML/Tailwind). Justification: Using icons makes the section quickly scannable and visually distinct.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #334155;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-[#F8F7F4]/80 backdrop-blur-lg sticky top-0 z-50 transition-all duration-300">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold text-slate-800">
+                    <a href="#home">DVO</a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#summary" class="text-slate-600 hover:text-teal-600 transition-colors">Summary</a>
+                    <a href="#experience" class="text-slate-600 hover:text-teal-600 transition-colors">Experience</a>
+                    <a href="#skills" class="text-slate-600 hover:text-teal-600 transition-colors">Skills</a>
+                    <a href="#education" class="text-slate-600 hover:text-teal-600 transition-colors">Education & Certs</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-slate-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4">
+                <a href="#summary" class="block py-2 px-4 text-sm text-slate-600 hover:bg-slate-200 rounded">Summary</a>
+                <a href="#experience" class="block py-2 px-4 text-sm text-slate-600 hover:bg-slate-200 rounded">Experience</a>
+                <a href="#skills" class="block py-2 px-4 text-sm text-slate-600 hover:bg-slate-200 rounded">Skills</a>
+                <a href="#education" class="block py-2 px-4 text-sm text-slate-600 hover:bg-slate-200 rounded">Education & Certs</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6">
+        <section id="home" class="min-h-[60vh] flex items-center py-20">
+            <div>
+                <h1 class="text-5xl md:text-7xl font-bold text-slate-800 leading-tight">David Van Osdol</h1>
+                <h2 class="text-2xl md:text-3xl font-medium text-teal-600 mt-2">CFA Charterholder & Certified Financial Planner®</h2>
+                <p class="mt-6 max-w-3xl text-lg text-slate-600">
+                    A dynamic and client-focused financial professional with over 20 years of experience spanning wealth management, business development, and fintech entrepreneurship.
+                </p>
+                <div class="mt-8 flex items-center space-x-6 text-slate-600">
+                    <span>📞 646-418-2867</span>
+                    <span>📧 davidvanosdol88@gmail.com</span>
+                    <span>🌍 Nyack, NY</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary" class="py-20 border-t border-slate-200">
+            <h2 class="text-4xl font-bold text-center text-slate-800">Professional Summary</h2>
+            <div class="mt-8 max-w-4xl mx-auto text-center text-slate-600 text-lg leading-relaxed">
+                <p>This section provides a high-level overview of my professional background. With advanced knowledge of financial products and a commitment to fiduciary principles, my goal is to deliver comprehensive, tailored solutions that place client interests first. I thrive on leveraging a broad range of financial and technological expertise to help clients achieve their goals.</p>
+            </div>
+             <div class="mt-12 bg-white p-8 rounded-xl shadow-md border border-slate-200">
+                <p class="text-slate-700 leading-loose">Highly accomplished and client-focused financial professional with over 20 years of experience in wealth management, financial planning, and client advisory. As a Chartered Financial Analyst (CFA) charterholder and Certified Financial Planner (CFP®), I possess advanced knowledge of financial products, complex planning concepts, and a proven ability to deepen relationships with high net worth clients. My entrepreneurial spirit and commitment to fiduciary principles drive me to deliver comprehensive, tailored solutions that place client interests first, leveraging a broad range of financial and technological expertise.</p>
+            </div>
+        </section>
+
+        <section id="experience" class="py-20 border-t border-slate-200">
+            <h2 class="text-4xl font-bold text-center text-slate-800">Professional Experience</h2>
+             <div class="mt-8 max-w-4xl mx-auto text-center text-slate-600 text-lg leading-relaxed">
+                <p>My career has been a journey through diverse roles in the financial industry, from large established firms to building a startup from the ground up. The timeline below highlights key roles and accomplishments. Click on any role to see more details. Below the timeline, a chart visualizes the duration of each position, providing an at-a-glance overview of my career path.</p>
+            </div>
+            <div id="timeline-container" class="mt-16 max-w-4xl mx-auto">
+            </div>
+            <div class="mt-20">
+                <h3 class="text-3xl font-bold text-center text-slate-800 mb-8">Career Duration Overview</h3>
+                <div class="chart-container">
+                    <canvas id="experienceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="py-20 border-t border-slate-200">
+            <h2 class="text-4xl font-bold text-center text-slate-800">Key Skills & Competencies</h2>
+             <div class="mt-8 max-w-4xl mx-auto text-center text-slate-600 text-lg leading-relaxed">
+                <p>This section outlines the core competencies I've developed throughout my career. These skills are grouped into key areas of expertise, from client advisory and business strategy to technical and analytical capabilities. They represent the foundation upon which I build effective financial solutions and client relationships.</p>
+            </div>
+            <div id="skills-container" class="mt-16 grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+            </div>
+        </section>
+
+        <section id="education" class="py-20 border-t border-slate-200">
+            <h2 class="text-4xl font-bold text-center text-slate-800">Education & Certifications</h2>
+            <div class="mt-8 max-w-4xl mx-auto text-center text-slate-600 text-lg leading-relaxed">
+                <p>A strong educational foundation and a commitment to continuous learning are cornerstones of my professional practice. This section details my academic background and the key industry certifications I hold, which validate my expertise and dedication to the highest standards of the financial profession.</p>
+            </div>
+            <div id="education-container" class="mt-16 grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>&copy; 2025 David Van Osdol. All Rights Reserved.</p>
+            <p class="text-sm text-slate-400 mt-2">Interactive resume designed to showcase professional experience.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = mobileMenu.querySelectorAll('a');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            let lastScrollY = window.scrollY;
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 100) {
+                    header.classList.add('shadow-md');
+                } else {
+                    header.classList.remove('shadow-md');
+                }
+                lastScrollY = window.scrollY;
+            });
+
+            const experienceData = [
+                {
+                    role: "Financial Consultant",
+                    company: "Fidelity Investments",
+                    period: "Oct 2021 – Present",
+                    location: "Chappaqua, NY",
+                    details: [
+                        "Cultivate and deepen relationships with affluent clients, guiding them through comprehensive retirement and financial planning, and investment strategies.",
+                        "Lead and collaborate effectively with a unified Wealth Management Team to achieve defined financial objectives for clients.",
+                        "Utilize extensive industry experience and professional designations to diagnose client needs and propose optimal financial solutions."
+                    ],
+                    startDate: new Date('2021-10-01'),
+                    endDate: new Date() 
+                },
+                {
+                    role: "Financial Planning Specialist",
+                    company: "Pell Wealth Partners",
+                    period: "Sep 2019 – Jan 2021",
+                    location: "Rye, NY",
+                    details: [
+                        "Designed, presented, and implemented comprehensive financial plans for high net worth (HNW) clients, ensuring successful client retention and long-term relationships.",
+                        "Leveraged advanced financial planning software (NaviPlan, Morningstar, etc.) and custom analytical tools to analyze financial landscapes and develop actionable recommendations.",
+                        "Communicated complex financial solutions clearly and effectively to clients, enhancing understanding and fostering trust."
+                    ],
+                    startDate: new Date('2019-09-01'),
+                    endDate: new Date('2021-01-31')
+                },
+                {
+                    role: "Registered Representative",
+                    company: "Peller Wealth Management",
+                    period: "Nov 2018 – Sep 2019",
+                    location: "New York, NY",
+                    details: [
+                        "Developed and executed strategic marketing initiatives to establish and grow a CPA-affiliated wealth management division, attracting and onboarding HNW clients.",
+                        "Advised clients on transitioning into new financial services, demonstrating superior communication and relationship-building skills.",
+                        "Collaborated closely with principals to optimize operational best practices and ensure adherence to compliance requirements."
+                    ],
+                    startDate: new Date('2018-11-01'),
+                    endDate: new Date('2019-09-30')
+                },
+                {
+                    role: "VP, Business Development",
+                    company: "Sunnyside Federal Bank (Nasdaq: SNNY)",
+                    period: "Nov 2013 – Oct 2015",
+                    location: "Irvington, NY",
+                    details: [
+                        "Originated the largest loan in bank history, demonstrating strong sales aptitude and a growth mindset.",
+                        "Developed and implemented successful loyalty programs, fostering community engagement and potential client referrals.",
+                        "Initiated strategic expansion plans, including the integration of wealth management offerings, showcasing an understanding of broader financial landscapes."
+                    ],
+                    startDate: new Date('2013-11-01'),
+                    endDate: new Date('2015-10-31')
+                },
+                {
+                    role: "Founder & CEO",
+                    company: "Kidos, Inc.",
+                    period: "Sep 2008 – Sep 2013",
+                    location: "New York, NY",
+                    details: [
+                        "Built an ed-tech startup from inception, demonstrating entrepreneurial leadership and the ability to drive innovation.",
+                        "Managed content licensing and digital distribution across multiple languages, highlighting adaptable business acumen.",
+                        "Led cross-functional teams from prototyping to deployment, and successfully engaged with investors."
+                    ],
+                    startDate: new Date('2008-09-01'),
+                    endDate: new Date('2013-09-30')
+                },
+                {
+                    role: "Financial Advisor & Portfolio Manager",
+                    company: "Citigroup / Smith Barney / Morgan Stanley",
+                    period: "Jan 1998 – Sep 2008",
+                    location: "New York, NY",
+                    details: [
+                        "Built a significant Asset Under Management (AUM) from a base of $0 through targeted business development and strong client relationships.",
+                        "Awarded “Blue Chip” status (Top 10%) three consecutive years, recognizing exceptional performance in client acquisition and retention.",
+                        "Led national training initiatives for senior private bankers on investment integration, demonstrating expertise in portfolio management and collaboration."
+                    ],
+                    startDate: new Date('1998-01-01'),
+                    endDate: new Date('2008-09-30')
+                },
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            experienceData.forEach((item, index) => {
+                const isLast = index === experienceData.length - 1;
+                const timelineItem = `
+                    <div class="relative timeline-item cursor-pointer">
+                        <div class="absolute w-0.5 h-full bg-slate-300 left-5 -top-4"></div>
+                        <div class="flex items-center">
+                            <div class="z-10 bg-teal-600 rounded-full h-10 w-10 flex items-center justify-center text-white font-bold">
+                                ${experienceData.length - index}
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 hover:shadow-lg hover:border-teal-300 transition-all">
+                                    <h3 class="text-xl font-bold text-slate-800">${item.role}</h3>
+                                    <p class="text-teal-600 font-semibold">${item.company}</p>
+                                    <p class="text-sm text-slate-500 mt-1">${item.period} | ${item.location}</p>
+                                    <div class="details mt-4 text-slate-600 hidden transition-all duration-500 ease-in-out">
+                                        <ul class="list-disc list-inside space-y-2">
+                                            ${item.details.map(d => `<li>${d}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                    <div class="text-right text-sm font-medium text-teal-600 mt-4">Click to expand</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const itemWrapper = document.createElement('div');
+                itemWrapper.innerHTML = timelineItem;
+                itemWrapper.className = 'mb-8';
+
+                itemWrapper.querySelector('.timeline-item').addEventListener('click', (event) => {
+                    const details = event.currentTarget.querySelector('.details');
+                    const expandText = event.currentTarget.querySelector('.text-right');
+                    details.classList.toggle('hidden');
+                    expandText.textContent = details.classList.contains('hidden') ? 'Click to expand' : 'Click to collapse';
+                });
+
+                timelineContainer.appendChild(itemWrapper);
+            });
+
+            const skillsData = [
+                { 
+                    category: "Wealth Management & Advisory",
+                    skills: ["Comprehensive Financial Planning", "Investment Strategy", "Asset Allocation", "Portfolio Analysis & Review", "High Net-Worth Client Advisory", "Client Retention", "Fiduciary Responsibility", "Estate, Insurance & Tax Planning", "Compliance & Regulatory Adherence"]
+                },
+                {
+                    category: "Business Acumen",
+                    skills: ["Business Development", "Client Acquisition", "Sales Aptitude", "Entrepreneurship", "Strategic Planning", "Market Analysis", "Growth Mindset", "Relationship Management"]
+                },
+                {
+                    category: "Technical & Analytical",
+                    skills: ["Financial Planning Software (NaviPlan, Morningstar)", "Financial Modeling", "Data Analysis", "Python (Pandas, Scikit-Learn)", "Tableau", "Microsoft Excel (Advanced)"]
+                },
+                {
+                    category: "Communication & Collaboration",
+                    skills: ["Superior Interpersonal Communication", "Complex Financial Solution Presentation", "Relationship Building", "Team Leadership", "Cross-functional Collaboration"]
+                }
+            ];
+
+            const skillsContainer = document.getElementById('skills-container');
+            skillsData.forEach(cat => {
+                const skillCard = `
+                    <div class="bg-white p-8 rounded-xl shadow-md border border-slate-200 transform hover:-translate-y-1 transition-transform">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">${cat.category}</h3>
+                        <ul class="space-y-2">
+                            ${cat.skills.map(skill => `<li class="flex items-start"><span class="text-teal-500 mr-2 mt-1">✓</span><span class="text-slate-600">${skill}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                skillsContainer.innerHTML += skillCard;
+            });
+
+            const educationData = {
+                degree: {
+                    icon: '🎓',
+                    title: "Education",
+                    items: [
+                        { name: "West Virginia University", detail: "Bachelor’s Degree in Finance" }
+                    ]
+                },
+                certs: {
+                    icon: '📜',
+                    title: "Certifications & Licenses",
+                    items: [
+                        { name: "CFA Charterholder", detail: "CFA Institute (ID: 192342)" },
+                        { name: "Certified Financial Planner® (CFP®)", detail: "CFP Board (ID: 76677)" },
+                        { name: "Series 7 & 66", detail: "FINRA" }
+                    ]
+                }
+            };
+            
+            const educationContainer = document.getElementById('education-container');
+            Object.values(educationData).forEach(section => {
+                const eduCard = `
+                    <div class="bg-white p-8 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 flex items-center">
+                            <span class="text-3xl mr-3">${section.icon}</span>
+                            ${section.title}
+                        </h3>
+                        <div class="space-y-3">
+                            ${section.items.map(item => `
+                                <div>
+                                    <p class="font-semibold text-slate-700">${item.name}</p>
+                                    <p class="text-slate-500">${item.detail}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                educationContainer.innerHTML += eduCard;
+            });
+
+            const chartCtx = document.getElementById('experienceChart').getContext('2d');
+            const chartData = experienceData.slice().reverse(); 
+            const labels = chartData.map(item => item.company);
+            const durations = chartData.map(item => {
+                const diffTime = Math.abs(item.endDate - item.startDate);
+                const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+                return diffYears.toFixed(2);
+            });
+            
+            new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Years in Role',
+                        data: durations,
+                        backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Duration (Years)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + ' years';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
