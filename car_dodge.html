@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Dodge Game - Improved Graphics</title>
+    <style>
+        body {font-family: Arial, sans-serif;text-align: center;}
+        canvas {background:#a3d9ff;border:1px solid #333;border-radius:8px;}
+    </style>
+</head>
+<body>
+    <h1>Car Dodge</h1>
+    <canvas id="gameCanvas" width="600" height="800"></canvas>
+    <script>
+// minimal version from user code with improved graphics functions
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let obstacles = [];
+let trees = [];
+
+function drawRoad(){
+    ctx.fillStyle = '#555';
+    ctx.fillRect(200,0,200,canvas.height);
+}
+
+function drawTrees(){
+    trees.forEach(tree=>{
+        const cx = tree.x;
+        const cy = tree.y;
+        const w = tree.width;
+        const h = tree.height;
+        // trunk with gradient
+        const grad = ctx.createLinearGradient(cx, cy+h*0.7, cx, cy+h);
+        grad.addColorStop(0,'#8b5a2b');
+        grad.addColorStop(1,'#5c3b1e');
+        ctx.fillStyle = grad;
+        ctx.fillRect(cx-w*0.1, cy+h*0.7, w*0.2, h*0.3);
+        // foliage multiple circles
+        ctx.fillStyle = '#2e8b57';
+        ctx.beginPath();
+        ctx.arc(cx, cy+h*0.5, w*0.6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx-w*0.4, cy+h*0.55, w*0.4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx+w*0.4, cy+h*0.55, w*0.4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy+h*0.3, w*0.5, 0, Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function drawObstacles(){
+    obstacles.forEach(o=>{
+        if(o.type==='motorcycle'){
+            const x=o.x, y=o.y, w=o.width, h=o.height;
+            ctx.fillStyle='black';
+            // wheels
+            ctx.beginPath();
+            ctx.arc(x+w*0.25, y+h*0.9, w*0.25,0,Math.PI*2);ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x+w*0.75, y+h*0.9, w*0.25,0,Math.PI*2);ctx.fill();
+            // frame
+            ctx.fillStyle=o.color;
+            ctx.fillRect(x+w*0.2, y+h*0.4, w*0.6, h*0.25);
+            // tank/seat
+            ctx.fillStyle='#333';
+            ctx.fillRect(x+w*0.35, y+h*0.25, w*0.3, h*0.15);
+            // handlebar
+            ctx.strokeStyle='#333';
+            ctx.lineWidth=2;
+            ctx.beginPath();
+            ctx.moveTo(x+w*0.5, y+h*0.4);
+            ctx.lineTo(x+w*0.2, y+h*0.2);
+            ctx.moveTo(x+w*0.5, y+h*0.4);
+            ctx.lineTo(x+w*0.8, y+h*0.2);
+            ctx.stroke();
+        } else if(o.type==='tank'){
+            const x=o.x, y=o.y, w=o.width, h=o.height;
+            // tracks
+            ctx.fillStyle='#2f2f2f';
+            ctx.fillRect(x, y+h*0.8, w, h*0.2);
+            // body
+            ctx.fillStyle=o.color;
+            ctx.fillRect(x+w*0.1, y+h*0.4, w*0.8, h*0.4);
+            // turret
+            ctx.beginPath();
+            ctx.arc(x+w*0.5, y+h*0.35, w*0.25,0,Math.PI*2);ctx.fill();
+            // barrel
+            ctx.fillStyle='#444';
+            ctx.fillRect(x+w*0.48, y, w*0.04, h*0.35);
+        } else {
+            ctx.fillStyle=o.color;
+            ctx.fillRect(o.x,o.y,o.width,o.height);
+        }
+    });
+}
+
+function generate(){
+    obstacles.push({type:'motorcycle',x:260,y:100,width:40,height:70,color:'red'});
+    obstacles.push({type:'tank',x:240,y:300,width:120,height:120,color:'darkgreen'});
+    trees.push({x:150,y:150,width:40,height:100});
+    trees.push({x:450,y:250,width:40,height:100});
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawRoad();
+    drawTrees();
+    drawObstacles();
+}
+
+generate();
+draw();
+    </script>
+</body>
+</html>
