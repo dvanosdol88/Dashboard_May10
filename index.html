@@ -94,11 +94,20 @@
       font-size: 0.9rem;
       white-space: pre-wrap;
     }
+    .status-indicator {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .database-connected { color: #28a745; }
+    .localStorage-fallback { color: #ffc107; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📋 DVO Personal Dashboard</h1>
+    <h1>📋 Meta-G Task Dashboard</h1>
+    <div class="status-indicator" id="connection-status">🔄 Connecting to database...</div>
 
     <section class="task-section work">
       <h2>💼 Work Tasks</h2>
@@ -138,51 +147,201 @@
   </div>
 
   <script>
-    const storageKey = { work: 'workTasks', personal: 'personalTasks' };
+    // Updated Dashboard frontend JavaScript to use database API instead of localStorage
+    const API_BASE_URL = 'https://dashboard-api-6n0s.onrender.com/api';
+    let usingDatabase = false;
 
-    function loadTasks(type) {
-      const saved = localStorage.getItem(storageKey[type]);
-      return saved ? JSON.parse(saved) : [];
+    // Database functions
+    async function loadTasks() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/tasks/default_user`);
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+        
+        const tasks = await response.json();
+        usingDatabase = true;
+        updateConnectionStatus('database');
+        
+        const workTasks = tasks.filter(task => task.type === 'work');
+        const personalTasks = tasks.filter(task => task.type === 'personal');
+        
+        renderTasksFromDatabase('work', workTasks);
+        renderTasksFromDatabase('personal', personalTasks);
+        
+        console.log('✅ Tasks loaded from database:', tasks.length);
+      } catch (error) {
+        console.error('❌ Error loading tasks:', error);
+        usingDatabase = false;
+        updateConnectionStatus('localStorage');
+        loadTasksFromLocalStorage();
+      }
     }
 
-    function saveTasks(type, tasks) {
-      localStorage.setItem(storageKey[type], JSON.stringify(tasks));
+    async function saveTask(text, type) {
+      if (usingDatabase) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/tasks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: text,
+              type: type,
+              userId: 'default_user'
+            })
+          });
+          
+          if (!response.ok) throw new Error('Failed to save task');
+          
+          const newTask = await response.json();
+          console.log('✅ Task saved to database:', newTask);
+          await loadTasks();
+          return;
+          
+        } catch (error) {
+          console.error('❌ Error saving task:', error);
+          usingDatabase = false;
+          updateConnectionStatus('localStorage');
+        }
+      }
+      
+      // Fallback to localStorage
+      saveTaskToLocalStorage(text, type);
     }
 
-    function renderTasks(type) {
+    async function toggleTaskCompletion(taskId, completed) {
+      if (usingDatabase) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ completed: completed })
+          });
+          
+          if (!response.ok) throw new Error('Failed to update task');
+          
+          const updatedTask = await response.json();
+          console.log('✅ Task updated in database:', updatedTask);
+          await loadTasks();
+          return;
+          
+        } catch (error) {
+          console.error('❌ Error updating task:', error);
+          usingDatabase = false;
+          updateConnectionStatus('localStorage');
+        }
+      }
+      
+      // Fallback to localStorage
+      toggleTaskInLocalStorage(taskId, completed);
+    }
+
+    function renderTasksFromDatabase(type, tasks) {
       const list = document.getElementById(`${type}-list`);
       list.innerHTML = '';
-      const tasks = loadTasks(type);
-      tasks.forEach((task, index) => {
+      
+      tasks.forEach(task => {
         const li = document.createElement('li');
+        li.className = task.completed ? 'completed' : '';
+        
         const span = document.createElement('span');
         span.textContent = task.text;
+        if (task.description) {
+          span.innerHTML += `<small style="margin-left: 10px; color: #666;"> - ${task.description}</small>`;
+        }
+        
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = task.completed;
-        if (task.completed) li.classList.add('completed');
         checkbox.addEventListener('change', () => {
-          tasks[index].completed = checkbox.checked;
-          saveTasks(type, tasks);
-          renderTasks(type);
+          toggleTaskCompletion(task.id, checkbox.checked);
         });
+        
         li.appendChild(span);
         li.appendChild(checkbox);
         list.appendChild(li);
       });
     }
 
-    function addTask(type) {
-      const input = document.getElementById(`new-${type}-task`);
-      const tasks = loadTasks(type);
-      const value = input.value.trim();
-      if (!value) return;
-      tasks.push({ text: value, completed: false });
-      saveTasks(type, tasks);
-      input.value = '';
-      renderTasks(type);
+    // LocalStorage fallback functions
+    const storageKey = { work: 'workTasks', personal: 'personalTasks' };
+
+    function loadTasksFromLocalStorage() {
+      ['work', 'personal'].forEach(type => {
+        const saved = localStorage.getItem(storageKey[type]);
+        const tasks = saved ? JSON.parse(saved) : [];
+        renderTasksFromLocalStorage(type, tasks);
+      });
     }
 
+    function saveTaskToLocalStorage(text, type) {
+      const tasks = JSON.parse(localStorage.getItem(storageKey[type])) || [];
+      tasks.push({ 
+        id: Date.now(), 
+        text: text, 
+        completed: false,
+        type: type 
+      });
+      localStorage.setItem(storageKey[type], JSON.stringify(tasks));
+      loadTasksFromLocalStorage();
+    }
+
+    function toggleTaskInLocalStorage(taskId, completed) {
+      Object.values(storageKey).forEach(key => {
+        const tasks = JSON.parse(localStorage.getItem(key)) || [];
+        const task = tasks.find(t => t.id == taskId);
+        if (task) {
+          task.completed = completed;
+          localStorage.setItem(key, JSON.stringify(tasks));
+        }
+      });
+      loadTasksFromLocalStorage();
+    }
+
+    function renderTasksFromLocalStorage(type, tasks) {
+      const list = document.getElementById(`${type}-list`);
+      list.innerHTML = '';
+      
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.className = task.completed ? 'completed' : '';
+        
+        const span = document.createElement('span');
+        span.textContent = task.text;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.completed;
+        checkbox.addEventListener('change', () => {
+          toggleTaskInLocalStorage(task.id, checkbox.checked);
+        });
+        
+        li.appendChild(span);
+        li.appendChild(checkbox);
+        list.appendChild(li);
+      });
+    }
+
+    // Shared functions
+    function addTask(type) {
+      const input = document.getElementById(`new-${type}-task`);
+      const value = input.value.trim();
+      if (!value) return;
+      
+      saveTask(value, type);
+      input.value = '';
+    }
+
+    function updateConnectionStatus(mode) {
+      const status = document.getElementById('connection-status');
+      if (mode === 'database') {
+        status.innerHTML = '🟢 Connected to database - tasks sync across devices';
+        status.className = 'status-indicator database-connected';
+      } else {
+        status.innerHTML = '🟡 Using local storage - tasks saved locally only';
+        status.className = 'status-indicator localStorage-fallback';
+      }
+    }
+
+    // Chat functionality (unchanged)
     function submitPrompt() {
       const prompt = document.getElementById('gpt-prompt').value;
       if (!prompt.trim()) return;
@@ -202,7 +361,28 @@
       });
     }
 
-    ['work', 'personal'].forEach(renderTasks);
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTasks();
+      
+      // Add Enter key support for inputs
+      document.getElementById('new-work-task').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') addTask('work');
+      });
+      
+      document.getElementById('new-personal-task').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') addTask('personal');
+      });
+      
+      document.getElementById('gpt-prompt').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          submitPrompt();
+        }
+      });
+    });
+
+    console.log('📱 Dashboard frontend updated to use database API with localStorage fallback!');
   </script>
 </body>
 </html>
