@@ -294,6 +294,36 @@
             background: #e0e0e0;
             padding-left: 18px;
         }
+        
+        .list-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        .list-item.empty {
+            font-style: italic;
+            opacity: 0.5;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            margin: 0;
+        }
+        
+        .loading-message, .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+        }
 
         /* Add Task Input */
         .add-task-container {
@@ -502,29 +532,11 @@
             <!-- Lists Widget -->
             <div class="widget list-widget">
                 <div class="widget-header">
-                    <h2 class="widget-title">Quick Lists</h2>
+                    <h2 class="widget-title">My Lists</h2>
                     <div class="widget-icon">📝</div>
                 </div>
-                <div class="widget-content">
-                    <div class="list-category">
-                        <div class="list-title">🛒 Grocery List</div>
-                        <div class="list-item">Organic vegetables</div>
-                        <div class="list-item">Greek yogurt</div>
-                        <div class="list-item">Salmon fillets</div>
-                        <div class="list-item">Coffee beans</div>
-                    </div>
-                    <div class="list-category">
-                        <div class="list-title">📚 Reading List</div>
-                        <div class="list-item">The Intelligent Investor</div>
-                        <div class="list-item">Python for Finance</div>
-                        <div class="list-item">Behavioral Economics</div>
-                    </div>
-                    <div class="list-category">
-                        <div class="list-title">💡 Project Ideas</div>
-                        <div class="list-item">Portfolio analysis dashboard</div>
-                        <div class="list-item">Client education workshop</div>
-                        <div class="list-item">Financial planning automation</div>
-                    </div>
+                <div class="widget-content" id="lists-container">
+                    <div class="loading-message">Loading lists...</div>
                 </div>
             </div>
         </main>
@@ -633,11 +645,84 @@
             }
         }
         
+        // Load and display lists dynamically
+        async function loadLists() {
+            const container = document.getElementById('lists-container');
+            
+            try {
+                const response = await fetch('https://calendar-backend-xwk6.onrender.com/api/tasks');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    container.innerHTML = '<div class="error-message">Failed to load lists</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                // Look for tasks that are lists (have subItems)
+                const allTasks = [...(data.data.work || []), ...(data.data.personal || [])];
+                const lists = allTasks.filter(task => 
+                    task.text.toLowerCase().includes('list') || 
+                    (task.subItems && task.subItems.length > 0)
+                );
+                
+                if (lists.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>No lists yet!</p>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                                Try saying "Add milk to grocery list" in the AI chat
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display each list
+                lists.forEach(list => {
+                    const listCategory = document.createElement('div');
+                    listCategory.className = 'list-category';
+                    
+                    // Determine icon based on list name
+                    let icon = '📝';
+                    if (list.text.toLowerCase().includes('grocery') || list.text.toLowerCase().includes('shopping')) {
+                        icon = '🛒';
+                    } else if (list.text.toLowerCase().includes('reading') || list.text.toLowerCase().includes('book')) {
+                        icon = '📚';
+                    } else if (list.text.toLowerCase().includes('project') || list.text.toLowerCase().includes('idea')) {
+                        icon = '💡';
+                    }
+                    
+                    listCategory.innerHTML = `
+                        <div class="list-title">${icon} ${list.text}</div>
+                        ${list.subItems && list.subItems.length > 0 ? 
+                            list.subItems.map(item => `
+                                <div class="list-item ${item.completed ? 'completed' : ''}">
+                                    ${item.text}
+                                </div>
+                            `).join('') : 
+                            '<div class="list-item empty">No items yet</div>'
+                        }
+                    `;
+                    
+                    container.appendChild(listCategory);
+                });
+                
+            } catch (error) {
+                console.error('Error loading lists:', error);
+                container.innerHTML = '<div class="error-message">Error loading lists</div>';
+            }
+        }
+
         // Initialize tasks from cloud storage
         async function initializeTasks() {
             try {
                 // Load tasks from cloud and render them
                 await renderTasks();
+                
+                // Load lists
+                await loadLists();
                 
                 // Check if we need to initialize with default tasks
                 const workTasks = await loadTasks('work');
@@ -741,10 +826,11 @@
                     // Clear clarification context on successful completion
                     clarificationContext = null;
                     
-                    // If this was a task command, refresh the task lists
-                    if (data.taskCommand && data.executionResult && data.executionResult.success) {
+                    // If this was a task or list command, refresh the displays
+                    if ((data.taskCommand || data.listCommand) && data.executionResult && data.executionResult.success) {
                         setTimeout(() => {
                             renderTasks();
+                            loadLists(); // Refresh lists too
                         }, 500);
                     }
                 }
