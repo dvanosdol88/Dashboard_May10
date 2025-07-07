@@ -1,208 +1,725 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meta-G Dashboard</title>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    .container { max-width: 1000px; margin: auto; padding: 20px; }
-    h1 { text-align: center; font-size: 2.5rem; margin-bottom: 20px; }
-    .task-section {
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-    .task-section.work { background-color: #e1f0ff; border-left: 10px solid #007bff; }
-    .task-section.personal { background-color: #e8fce8; border-left: 10px solid #28a745; }
-    ul { list-style: none; padding-left: 0; }
-    ul li {
-      font-size: 1.2rem;
-      margin: 8px 0;
-      padding: 8px 12px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    ul li.completed { text-decoration: line-through; color: #aaa; }
-    .add-task { display: flex; gap: 10px; margin-top: 10px; }
-    .add-task input {
-      flex: 1; padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .add-task button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .calendar {
-      padding: 20px;
-      border-radius: 20px;
-      background-color: #fff3cd;
-      border-left: 10px solid #ffc107;
-      margin-bottom: 40px;
-    }
-    .calendar iframe { width: 100%; height: 600px; border: none; }
-    .chatgpt {
-      padding: 20px;
-      border-radius: 20px;
-      background-color: #f0e7ff;
-      border-left: 10px solid #9f4dff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-    .gpt-input {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .gpt-input textarea {
-      width: 100%;
-      height: 80px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      resize: none;
-    }
-    .gpt-input button {
-      padding: 10px;
-      border-radius: 8px;
-      background-color: #9f4dff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .gpt-response {
-      margin-top: 10px;
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      white-space: pre-wrap;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard - David CFP</title>
+    <meta name="description" content="Personal productivity dashboard for David - Financial Planning & Portfolio Management">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Navigation Bar */
+        .nav-sidebar {
+            width: 80px;
+            background: linear-gradient(180deg, #0A1828 0%, #004080 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav-item {
+            width: 60px;
+            height: 60px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 64, 128, 0.3);
+            transform: scale(1.05);
+        }
+
+        .nav-item:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+
+        .nav-item:hover:before {
+            animation: shimmer 0.5s ease-in-out;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100%) rotate(45deg); opacity: 0; }
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1366px;
+            margin: 0 auto;
+        }
+
+        .widget {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 64, 128, 0.1);
+        }
+
+        .widget:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 64, 128, 0.15);
+            border-color: rgba(0, 64, 128, 0.3);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid transparent;
+            background: linear-gradient(90deg, rgba(0, 64, 128, 0.1) 0%, transparent 100%);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .widget-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #0A1828;
+        }
+
+        .widget-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #004080, #0066cc);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .widget-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Email Widget */
+        .email-widget {
+            grid-column: span 2;
+        }
+
+        .email-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .email-item:hover {
+            background: #f8f8f8;
+            padding-left: 20px;
+        }
+
+        .email-from {
+            font-weight: 600;
+            color: #0A1828;
+            margin-bottom: 4px;
+        }
+
+        .email-subject {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Calendar Widget */
+        .calendar-widget {
+            grid-column: span 2;
+        }
+
+        /* AI Assistant Widget */
+        .ai-assistant {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #004080;
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: #004080;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+
+        .send-button:hover {
+            background: #0A1828;
+            transform: scale(1.1);
+        }
+
+        /* To-Do Widgets */
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            background: #f0f0f0;
+        }
+
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #004080;
+            border-radius: 4px;
+            margin-right: 12px;
+            transition: all 0.2s;
+        }
+
+        .todo-item:hover .todo-checkbox {
+            background: #004080;
+        }
+
+        /* Lists Widget */
+        .list-widget {
+            grid-row: span 2;
+        }
+
+        .list-category {
+            margin-bottom: 20px;
+        }
+
+        .list-title {
+            font-weight: 600;
+            color: #004080;
+            margin-bottom: 8px;
+        }
+
+        .list-item {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background: #e0e0e0;
+            padding-left: 18px;
+        }
+
+        /* Add Task Input */
+        .add-task-container {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .add-task-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .add-task-btn {
+            padding: 8px 12px;
+            background: #004080;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .email-widget, .calendar-widget, .ai-assistant {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-sidebar {
+                width: 60px;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            
+            .email-widget, .calendar-widget, .ai-assistant, .list-widget {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #004080;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status indicators */
+        .status-online {
+            color: #28a745;
+        }
+
+        .status-offline {
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📋 DVO Personal Dashboard</h1>
+    <div class="dashboard">
+        <!-- Navigation Sidebar -->
+        <nav class="nav-sidebar">
+            <div class="nav-item" data-section="overview" title="Dashboard Overview">
+                <span class="nav-icon">🏠</span>
+            </div>
+            <div class="nav-item" data-section="email" title="Email">
+                <span class="nav-icon">📧</span>
+            </div>
+            <div class="nav-item" data-section="calendar" title="Calendar">
+                <span class="nav-icon">📅</span>
+            </div>
+            <div class="nav-item" data-section="tasks" title="Tasks">
+                <span class="nav-icon">✓</span>
+            </div>
+            <div class="nav-item" data-section="ai" title="AI Assistant">
+                <span class="nav-icon">🤖</span>
+            </div>
+            <div class="nav-item" data-section="lists" title="Lists">
+                <span class="nav-icon">📝</span>
+            </div>
+            <div class="nav-item" data-section="settings" title="Settings" style="margin-top: auto;">
+                <span class="nav-icon">⚙️</span>
+            </div>
+        </nav>
 
-    <section class="task-section work">
-      <h2>💼 Work Tasks</h2>
-      <ul id="work-list"></ul>
-      <div class="add-task">
-        <input type="text" id="new-work-task" placeholder="Add work task...">
-        <button onclick="addTask('work')">Add</button>
-      </div>
-    </section>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Email Widget -->
+            <div class="widget email-widget">
+                <div class="widget-header">
+                    <h2 class="widget-title">Recent Email</h2>
+                    <div class="widget-icon">📧</div>
+                </div>
+                <div class="widget-content">
+                    <div class="email-item">
+                        <div class="email-from">John Smith</div>
+                        <div class="email-subject">Q4 Financial Report Review</div>
+                    </div>
+                    <div class="email-item">
+                        <div class="email-from">CFP Board</div>
+                        <div class="email-subject">Continuing Education Reminder</div>
+                    </div>
+                    <div class="email-item">
+                        <div class="email-from">Team Meeting</div>
+                        <div class="email-subject">Tomorrow's Agenda - Client Portfolio Review</div>
+                    </div>
+                    <div class="email-item">
+                        <div class="email-from">Data Science Weekly</div>
+                        <div class="email-subject">New Python Libraries for Financial Analysis</div>
+                    </div>
+                </div>
+            </div>
 
-    <section class="task-section personal">
-      <h2>🏠 Personal Tasks</h2>
-      <ul id="personal-list"></ul>
-      <div class="add-task">
-        <input type="text" id="new-personal-task" placeholder="Add personal task...">
-        <button onclick="addTask('personal')">Add</button>
-      </div>
-    </section>
+            <!-- Calendar Widget -->
+            <div class="widget calendar-widget">
+                <div class="widget-header">
+                    <h2 class="widget-title">Calendar</h2>
+                    <div class="widget-icon">📅</div>
+                </div>
+                <div class="widget-content">
+                    <iframe
+                        src="https://calendar.google.com/calendar/embed?src=davidvanosdol88%40gmail.com&ctz=America%2FNew_York"
+                        style="width: 100%; height: 250px; border: none; border-radius: 10px;"
+                        frameborder="0"
+                        scrolling="no"
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
 
-    <section class="calendar">
-      <h2>🗓️ Shared Calendar View</h2>
-      <iframe
-        src="https://calendar.google.com/calendar/embed?src=davidvanosdol88%40gmail.com&ctz=America%2FNew_York"
-        frameborder="0"
-        scrolling="no">
-      </iframe>
-    </section>
+            <!-- Work To-Do Widget -->
+            <div class="widget" id="work-tasks">
+                <div class="widget-header">
+                    <h2 class="widget-title">Work Tasks</h2>
+                    <div class="widget-icon">💼</div>
+                </div>
+                <div class="widget-content">
+                    <div id="work-task-list"></div>
+                    <div class="add-task-container">
+                        <input type="text" class="add-task-input" id="new-work-task" placeholder="Add work task...">
+                        <button class="add-task-btn" onclick="addNewTask('work')">Add</button>
+                    </div>
+                </div>
+            </div>
 
-    <section class="chatgpt">
-      <h2>🤖 Chat Assistant</h2>
-      <div class="gpt-input">
-        <textarea id="gpt-prompt" placeholder="Ask ChatGPT something..."></textarea>
-        <button onclick="submitPrompt()">Send</button>
-        <div class="gpt-response" id="gpt-response"></div>
-      </div>
-    </section>
-  </div>
+            <!-- Personal To-Do Widget -->
+            <div class="widget" id="personal-tasks">
+                <div class="widget-header">
+                    <h2 class="widget-title">Personal Tasks</h2>
+                    <div class="widget-icon">🏃</div>
+                </div>
+                <div class="widget-content">
+                    <div id="personal-task-list"></div>
+                    <div class="add-task-container">
+                        <input type="text" class="add-task-input" id="new-personal-task" placeholder="Add personal task...">
+                        <button class="add-task-btn" onclick="addNewTask('personal')">Add</button>
+                    </div>
+                </div>
+            </div>
 
-  <script>
-    const storageKey = { work: 'workTasks', personal: 'personalTasks' };
+            <!-- AI Assistant Widget -->
+            <div class="widget ai-assistant">
+                <div class="widget-header">
+                    <h2 class="widget-title">AI Assistant <span id="ai-status" class="status-online">●</span></h2>
+                    <div class="widget-icon">🤖</div>
+                </div>
+                <div class="widget-content" style="display: flex; flex-direction: column;">
+                    <div class="chat-container" id="chat-container">
+                        <div style="padding: 10px; background: white; border-radius: 10px; margin-bottom: 10px;">
+                            <strong>Assistant:</strong> Good morning, David! I'm here to help with your calendar planning and any questions you might have. How can I assist you today?
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" id="chat-input" placeholder="Ask your AI assistant...">
+                        <button class="send-button" onclick="submitChatPrompt()" title="Send message">➤</button>
+                    </div>
+                </div>
+            </div>
 
-    function loadTasks(type) {
-      const saved = localStorage.getItem(storageKey[type]);
-      return saved ? JSON.parse(saved) : [];
-    }
+            <!-- Lists Widget -->
+            <div class="widget list-widget">
+                <div class="widget-header">
+                    <h2 class="widget-title">Quick Lists</h2>
+                    <div class="widget-icon">📝</div>
+                </div>
+                <div class="widget-content">
+                    <div class="list-category">
+                        <div class="list-title">🛒 Grocery List</div>
+                        <div class="list-item">Organic vegetables</div>
+                        <div class="list-item">Greek yogurt</div>
+                        <div class="list-item">Salmon fillets</div>
+                        <div class="list-item">Coffee beans</div>
+                    </div>
+                    <div class="list-category">
+                        <div class="list-title">📚 Reading List</div>
+                        <div class="list-item">The Intelligent Investor</div>
+                        <div class="list-item">Python for Finance</div>
+                        <div class="list-item">Behavioral Economics</div>
+                    </div>
+                    <div class="list-category">
+                        <div class="list-title">💡 Project Ideas</div>
+                        <div class="list-item">Portfolio analysis dashboard</div>
+                        <div class="list-item">Client education workshop</div>
+                        <div class="list-item">Financial planning automation</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    function saveTasks(type, tasks) {
-      localStorage.setItem(storageKey[type], JSON.stringify(tasks));
-    }
+    <script>
+        // Task Management System
+        const STORAGE_KEYS = { work: 'davidDashboard_workTasks', personal: 'davidDashboard_personalTasks' };
+        
+        function loadTasks(type) {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS[type]);
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                console.error('Error loading tasks:', e);
+                return [];
+            }
+        }
+        
+        function saveTasks(type, tasks) {
+            try {
+                localStorage.setItem(STORAGE_KEYS[type], JSON.stringify(tasks));
+            } catch (e) {
+                console.error('Error saving tasks:', e);
+            }
+        }
+        
+        function renderTasks() {
+            ['work', 'personal'].forEach(type => {
+                const tasks = loadTasks(type);
+                const container = document.getElementById(`${type}-task-list`);
+                container.innerHTML = '';
+                
+                tasks.forEach((task, index) => {
+                    const todoItem = document.createElement('div');
+                    todoItem.className = 'todo-item';
+                    todoItem.innerHTML = `
+                        <div class="todo-checkbox" style="background: ${task.completed ? '#004080' : ''}"></div>
+                        <span style="opacity: ${task.completed ? '0.5' : '1'}; text-decoration: ${task.completed ? 'line-through' : 'none'}">${task.text}</span>
+                    `;
+                    todoItem.addEventListener('click', () => toggleTask(type, index));
+                    container.appendChild(todoItem);
+                });
+            });
+        }
+        
+        function toggleTask(type, index) {
+            const tasks = loadTasks(type);
+            if (tasks[index]) {
+                tasks[index].completed = !tasks[index].completed;
+                saveTasks(type, tasks);
+                renderTasks();
+            }
+        }
+        
+        function addNewTask(type) {
+            const input = document.getElementById(`new-${type}-task`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const tasks = loadTasks(type);
+            tasks.push({ text: text, completed: false, created: new Date().toISOString() });
+            saveTasks(type, tasks);
+            input.value = '';
+            renderTasks();
+        }
+        
+        // Initialize default tasks if none exist
+        function initializeTasks() {
+            if (!localStorage.getItem(STORAGE_KEYS.work)) {
+                saveTasks('work', [
+                    { text: 'Review client portfolio allocations', completed: false, created: new Date().toISOString() },
+                    { text: 'Complete CFA study session', completed: false, created: new Date().toISOString() },
+                    { text: 'Prepare quarterly report presentation', completed: false, created: new Date().toISOString() },
+                    { text: 'Update financial planning models', completed: false, created: new Date().toISOString() }
+                ]);
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.personal)) {
+                saveTasks('personal', [
+                    { text: 'YMCA board meeting prep', completed: false, created: new Date().toISOString() },
+                    { text: 'Family dinner reservation', completed: false, created: new Date().toISOString() },
+                    { text: 'Weekend hiking trip planning', completed: false, created: new Date().toISOString() },
+                    { text: 'Schedule annual checkup', completed: false, created: new Date().toISOString() }
+                ]);
+            }
+            renderTasks();
+        }
 
-    function renderTasks(type) {
-      const list = document.getElementById(`${type}-list`);
-      list.innerHTML = '';
-      const tasks = loadTasks(type);
-      tasks.forEach((task, index) => {
-        const li = document.createElement('li');
-        const span = document.createElement('span');
-        span.textContent = task.text;
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = task.completed;
-        if (task.completed) li.classList.add('completed');
-        checkbox.addEventListener('change', () => {
-          tasks[index].completed = checkbox.checked;
-          saveTasks(type, tasks);
-          renderTasks(type);
+        // AI Chat System
+        function submitChatPrompt() {
+            const input = document.getElementById('chat-input');
+            const prompt = input.value.trim();
+            if (!prompt) return;
+            
+            const chatContainer = document.getElementById('chat-container');
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.style.cssText = 'padding: 10px; background: #004080; color: white; border-radius: 10px; margin-bottom: 10px; margin-left: 40px;';
+            userMessage.innerHTML = `<strong>You:</strong> ${prompt}`;
+            chatContainer.appendChild(userMessage);
+            
+            // Add loading response
+            const loadingResponse = document.createElement('div');
+            loadingResponse.style.cssText = 'padding: 10px; background: white; border-radius: 10px; margin-bottom: 10px;';
+            loadingResponse.innerHTML = '<strong>Assistant:</strong> <span class="loading"></span>';
+            chatContainer.appendChild(loadingResponse);
+            
+            // Clear input and scroll
+            input.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Update AI status
+            document.getElementById('ai-status').className = 'status-offline';
+            
+            // Send to backend
+            fetch('https://calendar-backend-xwk6.onrender.com/ask-gpt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            })
+            .then(res => res.json())
+            .then(data => {
+                loadingResponse.innerHTML = `<strong>Assistant:</strong> ${data.answer || 'No response received.'}`;
+                document.getElementById('ai-status').className = 'status-online';
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            })
+            .catch(err => {
+                console.error('AI Chat Error:', err);
+                loadingResponse.innerHTML = '<strong>Assistant:</strong> I\'m having trouble connecting right now. Please try again in a moment.';
+                document.getElementById('ai-status').className = 'status-offline';
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
+
+        // Navigation System
+        function initNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active state from all nav items
+                    document.querySelectorAll('.nav-item').forEach(i => i.style.background = '');
+                    // Add active state to clicked item
+                    this.style.background = 'rgba(23, 133, 130, 0.3)';
+                    
+                    // Optional: Add section highlighting
+                    const section = this.getAttribute('data-section');
+                    console.log(`Navigated to: ${section}`);
+                });
+            });
+        }
+
+        // Enter key support
+        function initKeyboardSupport() {
+            document.getElementById('chat-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitChatPrompt();
+                }
+            });
+
+            document.getElementById('new-work-task').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewTask('work');
+                }
+            });
+
+            document.getElementById('new-personal-task').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewTask('personal');
+                }
+            });
+        }
+
+        // Auto-save and periodic sync
+        function initAutoSync() {
+            setInterval(() => {
+                // Auto-save tasks every 30 seconds
+                const workTasks = loadTasks('work');
+                const personalTasks = loadTasks('personal');
+                saveTasks('work', workTasks);
+                saveTasks('personal', personalTasks);
+            }, 30000);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTasks();
+            initNavigation();
+            initKeyboardSupport();
+            initAutoSync();
+            
+            // Set initial navigation state
+            document.querySelector('.nav-item[data-section="overview"]').style.background = 'rgba(23, 133, 130, 0.3)';
+            
+            console.log('Dashboard initialized successfully');
         });
-        li.appendChild(span);
-        li.appendChild(checkbox);
-        list.appendChild(li);
-      });
-    }
 
-    function addTask(type) {
-      const input = document.getElementById(`new-${type}-task`);
-      const tasks = loadTasks(type);
-      const value = input.value.trim();
-      if (!value) return;
-      tasks.push({ text: value, completed: false });
-      saveTasks(type, tasks);
-      input.value = '';
-      renderTasks(type);
-    }
-
-    function submitPrompt() {
-      const prompt = document.getElementById('gpt-prompt').value;
-      if (!prompt.trim()) return;
-      document.getElementById('gpt-response').innerText = 'Thinking...';
-      fetch('https://calendar-backend-xwk6.onrender.com/ask-gpt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('gpt-response').innerText = data.answer || 'No response received.';
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('gpt-response').innerText = 'Error talking to GPT.';
-      });
-    }
-
-    ['work', 'personal'].forEach(renderTasks);
-  </script>
+        // Error handling for uncaught errors
+        window.addEventListener('error', function(e) {
+            console.error('Dashboard Error:', e.error);
+        });
+    </script>
 </body>
 </html>
