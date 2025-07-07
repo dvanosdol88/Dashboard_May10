@@ -479,6 +479,11 @@
             <div class="widget ai-assistant">
                 <div class="widget-header">
                     <h2 class="widget-title">AI Assistant <span id="ai-status" class="status-online">●</span></h2>
+                    <button onclick="if(conversationManager) conversationManager.createNewConversation()" 
+                            style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; 
+                                   border-radius: 5px; cursor: pointer; font-size: 12px;">
+                        New Chat
+                    </button>
                     <div class="widget-icon">🤖</div>
                 </div>
                 <div class="widget-content" style="display: flex; flex-direction: column;">
@@ -525,6 +530,9 @@
         </main>
     </div>
 
+    <!-- Conversation Memory Manager -->
+    <script src="conversation-manager.js"></script>
+    
     <script>
         // Cloud Task Management System
         const API_BASE = 'https://calendar-backend-xwk6.onrender.com';
@@ -670,13 +678,23 @@
             }
         }
 
-        // AI Chat System with clarification support
-        let clarificationContext = null;
+        // Initialize Conversation Memory Manager
+        let conversationManager = null;
         
+        // AI Chat System with conversation memory
         function submitChatPrompt() {
             const input = document.getElementById('chat-input');
             const prompt = input.value.trim();
             if (!prompt) return;
+            
+            // Clear input immediately
+            input.value = '';
+            
+            // Use conversation manager if available
+            if (conversationManager) {
+                conversationManager.submitMessage(prompt);
+                return;
+            }
             
             const chatContainer = document.getElementById('chat-container');
             
@@ -878,10 +896,17 @@
                 initAutoSync();
                 initGmailWidget(); // Initialize Gmail widget
                 
+                // Initialize Conversation Memory Manager
+                if (window.ConversationMemoryManager) {
+                    conversationManager = new ConversationMemoryManager();
+                    await conversationManager.loadConversationHistory();
+                    console.log('Conversation memory initialized');
+                }
+                
                 // Set initial navigation state
                 document.querySelector('.nav-item[data-section="overview"]').style.background = 'rgba(23, 133, 130, 0.3)';
                 
-                console.log('Dashboard initialized successfully with cloud task storage');
+                console.log('Dashboard initialized successfully with cloud task storage and conversation memory');
             } catch (e) {
                 console.error('Error initializing dashboard:', e);
             }
