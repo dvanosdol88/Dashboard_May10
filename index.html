@@ -670,7 +670,9 @@
             }
         }
 
-        // AI Chat System
+        // AI Chat System with clarification support
+        let clarificationContext = null;
+        
         function submitChatPrompt() {
             const input = document.getElementById('chat-input');
             const prompt = input.value.trim();
@@ -697,15 +699,39 @@
             // Update AI status
             document.getElementById('ai-status').className = 'status-offline';
             
+            // Prepare request body with clarification context if available
+            const requestBody = { prompt };
+            if (clarificationContext) {
+                requestBody.clarificationContext = clarificationContext;
+            }
+            
             // Send to backend
             fetch('https://calendar-backend-xwk6.onrender.com/ask-gpt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
+                body: JSON.stringify(requestBody)
             })
             .then(res => res.json())
             .then(data => {
-                loadingResponse.innerHTML = `<strong>Assistant:</strong> ${data.answer || 'No response received.'}`;
+                let responseHtml = `<strong>Assistant:</strong> ${data.answer || 'No response received.'}`;
+                
+                // Handle clarification requests
+                if (data.requiresClarification) {
+                    clarificationContext = data.clarificationContext;
+                    responseHtml += '<br><br><em style="color: #666;">Please type A, B, C, etc. to choose which task.</em>';
+                } else {
+                    // Clear clarification context on successful completion
+                    clarificationContext = null;
+                    
+                    // If this was a task command, refresh the task lists
+                    if (data.taskCommand && data.executionResult && data.executionResult.success) {
+                        setTimeout(() => {
+                            renderTasks();
+                        }, 500);
+                    }
+                }
+                
+                loadingResponse.innerHTML = responseHtml;
                 document.getElementById('ai-status').className = 'status-online';
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             })
@@ -713,6 +739,7 @@
                 console.error('AI Chat Error:', err);
                 loadingResponse.innerHTML = '<strong>Assistant:</strong> I\'m having trouble connecting right now. Please try again in a moment.';
                 document.getElementById('ai-status').className = 'status-offline';
+                clarificationContext = null; // Clear context on error
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             });
         }
