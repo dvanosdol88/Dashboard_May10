@@ -526,86 +526,148 @@
     </div>
 
     <script>
-        // Task Management System
-        const STORAGE_KEYS = { work: 'davidDashboard_workTasks', personal: 'davidDashboard_personalTasks' };
+        // Cloud Task Management System
+        const API_BASE = 'https://calendar-backend-xwk6.onrender.com';
         
-        function loadTasks(type) {
+        async function loadTasks(type) {
             try {
-                const saved = localStorage.getItem(STORAGE_KEYS[type]);
-                return saved ? JSON.parse(saved) : [];
+                const response = await fetch(`${API_BASE}/api/tasks/${type}`);
+                if (!response.ok) throw new Error('Failed to load tasks');
+                const data = await response.json();
+                return data.success ? data.data[type] : [];
             } catch (e) {
                 console.error('Error loading tasks:', e);
                 return [];
             }
         }
         
-        function saveTasks(type, tasks) {
+        async function saveTasks(type, tasks) {
+            // This function is now handled by individual API calls
+            // Keeping for compatibility but tasks are saved via API
+            return true;
+        }
+        
+        async function addTaskToCloud(type, text) {
             try {
-                localStorage.setItem(STORAGE_KEYS[type], JSON.stringify(tasks));
-            } catch (e) {
-                console.error('Error saving tasks:', e);
-            }
-        }
-        
-        function renderTasks() {
-            ['work', 'personal'].forEach(type => {
-                const tasks = loadTasks(type);
-                const container = document.getElementById(`${type}-task-list`);
-                container.innerHTML = '';
-                
-                tasks.forEach((task, index) => {
-                    const todoItem = document.createElement('div');
-                    todoItem.className = 'todo-item';
-                    todoItem.innerHTML = `
-                        <div class="todo-checkbox" style="background: ${task.completed ? '#004080' : ''}"></div>
-                        <span style="opacity: ${task.completed ? '0.5' : '1'}; text-decoration: ${task.completed ? 'line-through' : 'none'}">${task.text}</span>
-                    `;
-                    todoItem.addEventListener('click', () => toggleTask(type, index));
-                    container.appendChild(todoItem);
+                const response = await fetch(`${API_BASE}/api/tasks/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
                 });
-            });
-        }
-        
-        function toggleTask(type, index) {
-            const tasks = loadTasks(type);
-            if (tasks[index]) {
-                tasks[index].completed = !tasks[index].completed;
-                saveTasks(type, tasks);
-                renderTasks();
+                const data = await response.json();
+                return data.success ? data.data : null;
+            } catch (e) {
+                console.error('Error adding task:', e);
+                return null;
             }
         }
         
-        function addNewTask(type) {
+        async function toggleTaskInCloud(type, taskId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/tasks/${type}/${taskId}/toggle`, {
+                    method: 'PATCH'
+                });
+                const data = await response.json();
+                return data.success ? data.data : null;
+            } catch (e) {
+                console.error('Error toggling task:', e);
+                return null;
+            }
+        }
+        
+        async function renderTasks() {
+            for (const type of ['work', 'personal']) {
+                try {
+                    const tasks = await loadTasks(type);
+                    const container = document.getElementById(`${type}-task-list`);
+                    container.innerHTML = '';
+                    
+                    tasks.forEach((task) => {
+                        const todoItem = document.createElement('div');
+                        todoItem.className = 'todo-item';
+                        todoItem.innerHTML = `
+                            <div class="todo-checkbox" style="background: ${task.completed ? '#004080' : ''}"></div>
+                            <span style="opacity: ${task.completed ? '0.5' : '1'}; text-decoration: ${task.completed ? 'line-through' : 'none'}">${task.text}</span>
+                        `;
+                        todoItem.addEventListener('click', () => toggleTask(type, task.id));
+                        container.appendChild(todoItem);
+                    });
+                } catch (e) {
+                    console.error(`Error rendering ${type} tasks:`, e);
+                }
+            }
+        }
+        
+        async function toggleTask(type, taskId) {
+            try {
+                const updatedTask = await toggleTaskInCloud(type, taskId);
+                if (updatedTask) {
+                    await renderTasks(); // Re-render to show updated state
+                }
+            } catch (e) {
+                console.error('Error toggling task:', e);
+            }
+        }
+        
+        async function addNewTask(type) {
             const input = document.getElementById(`new-${type}-task`);
             const text = input.value.trim();
             if (!text) return;
             
-            const tasks = loadTasks(type);
-            tasks.push({ text: text, completed: false, created: new Date().toISOString() });
-            saveTasks(type, tasks);
-            input.value = '';
-            renderTasks();
+            try {
+                const newTask = await addTaskToCloud(type, text);
+                if (newTask) {
+                    input.value = '';
+                    await renderTasks(); // Re-render to show new task
+                }
+            } catch (e) {
+                console.error('Error adding task:', e);
+            }
         }
         
-        // Initialize default tasks if none exist
-        function initializeTasks() {
-            if (!localStorage.getItem(STORAGE_KEYS.work)) {
-                saveTasks('work', [
-                    { text: 'Review client portfolio allocations', completed: false, created: new Date().toISOString() },
-                    { text: 'Complete CFA study session', completed: false, created: new Date().toISOString() },
-                    { text: 'Prepare quarterly report presentation', completed: false, created: new Date().toISOString() },
-                    { text: 'Update financial planning models', completed: false, created: new Date().toISOString() }
-                ]);
+        // Initialize tasks from cloud storage
+        async function initializeTasks() {
+            try {
+                // Load tasks from cloud and render them
+                await renderTasks();
+                
+                // Check if we need to initialize with default tasks
+                const workTasks = await loadTasks('work');
+                const personalTasks = await loadTasks('personal');
+                
+                if (workTasks.length === 0) {
+                    // Add default work tasks
+                    const defaultWorkTasks = [
+                        'Review client portfolio allocations',
+                        'Complete CFA study session', 
+                        'Prepare quarterly report presentation',
+                        'Update financial planning models'
+                    ];
+                    
+                    for (const taskText of defaultWorkTasks) {
+                        await addTaskToCloud('work', taskText);
+                    }
+                }
+                
+                if (personalTasks.length === 0) {
+                    // Add default personal tasks
+                    const defaultPersonalTasks = [
+                        'YMCA board meeting prep',
+                        'Family dinner reservation',
+                        'Weekend hiking trip planning', 
+                        'Schedule annual checkup'
+                    ];
+                    
+                    for (const taskText of defaultPersonalTasks) {
+                        await addTaskToCloud('personal', taskText);
+                    }
+                }
+                
+                // Re-render after adding defaults
+                await renderTasks();
+            } catch (e) {
+                console.error('Error initializing tasks:', e);
             }
-            if (!localStorage.getItem(STORAGE_KEYS.personal)) {
-                saveTasks('personal', [
-                    { text: 'YMCA board meeting prep', completed: false, created: new Date().toISOString() },
-                    { text: 'Family dinner reservation', completed: false, created: new Date().toISOString() },
-                    { text: 'Weekend hiking trip planning', completed: false, created: new Date().toISOString() },
-                    { text: 'Schedule annual checkup', completed: false, created: new Date().toISOString() }
-                ]);
-            }
-            renderTasks();
         }
 
         // AI Chat System
@@ -781,17 +843,21 @@
         }
 
         // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeTasks();
-            initNavigation();
-            initKeyboardSupport();
-            initAutoSync();
-            initGmailWidget(); // Initialize Gmail widget
-            
-            // Set initial navigation state
-            document.querySelector('.nav-item[data-section="overview"]').style.background = 'rgba(23, 133, 130, 0.3)';
-            
-            console.log('Dashboard initialized successfully');
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initializeTasks();
+                initNavigation();
+                initKeyboardSupport();
+                initAutoSync();
+                initGmailWidget(); // Initialize Gmail widget
+                
+                // Set initial navigation state
+                document.querySelector('.nav-item[data-section="overview"]').style.background = 'rgba(23, 133, 130, 0.3)';
+                
+                console.log('Dashboard initialized successfully with cloud task storage');
+            } catch (e) {
+                console.error('Error initializing dashboard:', e);
+            }
         });
 
         // Error handling for uncaught errors
